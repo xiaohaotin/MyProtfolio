@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" type="text/css" href="./common.css" />
+	
+</head>
+
+<body>
+    <h1>ポートフォリオ</h1>
+    <h3>自己紹介</h3>
+    <table>
+        <tr>
+            <th>名前</th>
+            <td><ruby>肖浩廷<rt>ショウコウテイ</rt></ruby></td>
+        </tr>
+        <tr>
+            <th>出身校</th>
+            <td><ruby>東京デザインテクノロジーセンター専門学校<rt>Tech'C</rt></ruby></td>
+        </tr>
+        <tr>
+            <th>趣味</th>
+            <td>e-sports，ストリートダンス(Popping),映画を見ること</td>
+        </tr>
+		</tr>
+        <tr>
+            <th>好きなゲーム</th>
+            <td>LOL、オーバーウォッチ、モンスターハンターワールド、鉄拳７</td>
+        </tr>
+    </table>
+    <h3>成果物</h3>
+    <table>
+        <tr>
+            <th>タイトル</th>
+            <td>Sunny Land（個人製作）</td>
+        </tr>
+        <tr>
+            <th>プログラム概要</th>
+            <td>スーパーマリオみたい２Dアクションゲームです</br>
+			プレイヤーと敵の移動処理とお互いに消滅するコード</br>
+			アイテムを取得するとスコアを表示すること</td1>
+        </tr>
+        <tr>
+            <th>制作期間</th>
+            <td>2019/08/25 ~ 2019/09/07 毎日３時間程度、</td>
+        </tr>
+        <tr>
+            <th>使用言語・ソフト</th>
+            <td>Unity を使用し、Visual Studio Code を使い windows 上で記述・デバッグ。</td>
+        </tr>
+    </table>
+    <h4>ソースコード</h4>
+
+    <div onclick="obj=document.getElementById('menu1').style; obj.display=(obj.display=='none')?'block':'none';">
+        <a style="cursor:pointer;">▼ GameManager.csソースコード</a>
+    </div>
+
+    <div id="menu1" style="display:none;clear:both;">
+        <div class="rollbox">
+        <pre>
+                <code>
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+
+public class GameManager : MonoBehaviour
+{
+    [SerializeField] GameObject gameOverTextobj;
+    [SerializeField] GameObject gameClearTextobj;
+    [SerializeField] Text scoreText;
+
+    const int MAX_SCORE = 9999;
+    int score = 0;
+
+    private void Start()
+    {
+        scoreText.text = score.ToString();
+    }
+    public void AddScore(int val)
+    {
+        score += val;
+        if (score > MAX_SCORE)
+        {
+            score = MAX_SCORE;
+        }
+        scoreText.text = score.ToString();
+    }
+    public void GameOver()
+    {
+        gameOverTextobj.SetActive(true);
+        Invoke("ReStartThisScene",1f);
+        //ReStartThisScene();
+    }
+
+    public void GameClear()
+    {
+        gameClearTextobj.SetActive(true);
+        Invoke("ReStartThisScene", 1f);
+        //ReStartThisScene();
+    }
+
+    void ReStartThisScene()
+    {
+        Scene ThisScene = SceneManager.GetActiveScene();
+        SceneManager.LoadScene(ThisScene.name);
+    }
+}
+    
+    
+                </code>
+            </pre>
+        </div>
+    </div>
+
+
+    <div onclick="obj=document.getElementById('menu2').style; obj.display=(obj.display=='none')?'block':'none';">
+        <a style="cursor:pointer;">▼ EnemyManager.csソースコード</a>
+    </div>
+    <div id="menu2" style="display:none;clear:both;">
+            <div class="rollbox">
+
+        <pre>
+    <code>
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class EnemyManager : MonoBehaviour
+{
+    [SerializeField] LayerMask blockLayer;
+    Rigidbody2D rigibody2D;
+    float speed = 0;
+    float jumpPower = 400;
+    public enum MOVE_DIRECTION
+    {
+        STOP,
+        LEFT,
+        RIGHT,
+    }
+    MOVE_DIRECTION movedirection = MOVE_DIRECTION.RIGHT;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        rigibody2D = GetComponent<Rigidbody2D>();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        if (!IsGround())
+        {
+            //向きを変える
+            ChangeDirection();
+        }
+     
+    }
+    private void FixedUpdate()
+    {
+        switch (movedirection)
+        {
+            case MOVE_DIRECTION.STOP:
+                speed = 0;
+                break;
+            case MOVE_DIRECTION.LEFT:
+                transform.localScale = new Vector3(-1,1,1);
+                speed = -3;
+                break;
+            case MOVE_DIRECTION.RIGHT:
+                transform.localScale = new Vector3(1, 1, 1);
+                speed = 3;
+                break;
+        }
+        rigibody2D.velocity = new Vector2(speed, rigibody2D.velocity.y);
+    }
+    bool IsGround()
+    {
+        Vector3 startVec = transform.position + transform.right * 0.5f* transform.localScale.x;
+        Vector3 endtVec = startVec - transform.up * 1.0f;
+        Debug.DrawLine(startVec,endtVec);
+        return Physics2D.Linecast(startVec, endtVec, blockLayer); 
+            
+    }
+
+    void ChangeDirection()
+    {
+        if (movedirection == MOVE_DIRECTION.RIGHT)
+        {
+            //左に移動
+            movedirection = MOVE_DIRECTION.LEFT;
+        }
+        else
+        {
+            //右に移動
+            movedirection = MOVE_DIRECTION.RIGHT;
+        }
+
+    }
+    public void DestroyEnemy()
+    {
+        Destroy(this.gameObject);
+    }
+}
+
+
+    </code>
+    </pre>
+    </div>
+    </div>
+
+    <div onclick="obj=document.getElementById('menu4').style; obj.display=(obj.display=='none')?'block':'none';">
+        <a style="cursor:pointer;">▼ ItemManager.csソースコード</a>
+    </div>
+    <div id="menu4" style="display:none;clear:both;">
+            <div class="rollbox">
+        <pre>
+    <code>
+using UnityEngine;
+
+public class ItemManager : MonoBehaviour
+{
+    GameManager gameManager;
+    private void Start()
+    {
+        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+    }
+    public void GetItem()
+    {
+        gameManager.AddScore(100);
+        Destroy(this.gameObject);
+    }
+}
+
+    </code>
+    </pre>
+    </div>
+    </div>
+
+		<div onclick="obj=document.getElementById('menu6').style; obj.display=(obj.display=='none')?'block':'none';">
+        <a style="cursor:pointer;">▼ PlayerMovement.csソースコード</a>
+    </div>
+    <div id="menu6" style="display:none;clear:both;">
+            <div class="rollbox">
+        <pre>
+    <code>
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class PlayerMovement : MonoBehaviour
+{
+    [SerializeField] LayerMask blockLayer;
+    [SerializeField] GameManager gameManager;
+    Rigidbody2D rigibody2D;
+    float speed = 0;
+    float jumpPower = 400;
+    public enum MOVE_DIRECTION {
+        STOP,
+        LEFT,
+        RIGHT,
+    }
+    MOVE_DIRECTION movedirection = MOVE_DIRECTION.STOP;
+    
+    // Start is called before the first frame update
+    void Start()
+    {
+        rigibody2D = GetComponent<Rigidbody2D>();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        float x = Input.GetAxis("Horizontal");
+        if (x == 0)
+        {
+            //止まる
+            movedirection = MOVE_DIRECTION.STOP;
+        }
+        else if (x > 0)
+        {
+            //右に移動
+            movedirection = MOVE_DIRECTION.RIGHT;
+        }
+        else if (x < 0)
+        {
+            //左に移動
+            movedirection = MOVE_DIRECTION.LEFT;
+        }
+        if ( IsGround() && Input.GetKeyDown("space"))
+        {
+            Jump();
+        }
+    }
+    private void FixedUpdate()
+    {
+        switch (movedirection)
+        {
+            case MOVE_DIRECTION.STOP:
+                speed = 0;
+                break;
+            case MOVE_DIRECTION.LEFT:
+                transform.localScale = new Vector3(-1,1,1);
+                speed = -4;
+                break;
+            case MOVE_DIRECTION.RIGHT:
+                transform.localScale = new Vector3(1, 1, 1);
+                speed = 4;
+                break;
+        }
+        rigibody2D.velocity = new Vector2(speed, rigibody2D.velocity.y);
+    }
+
+    void Jump()
+    {
+        GetComponent<Rigidbody2D>().AddForce(Vector2.up * jumpPower);
+    }
+    bool IsGround()
+    {
+        return Physics2D.Linecast(transform.position-transform.right*0.3f, transform.position - transform.up * 0.1f,blockLayer)
+            || Physics2D.Linecast(transform.position + transform.right * 0.3f, transform.position - transform.up * 0.1f, blockLayer);
+    }
+    
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.gameObject.tag == "Trap")
+        {
+            //Debug.Log("GameOver");
+            gameManager.GameOver();
+        }
+        if (collision.gameObject.tag == "Finish")
+        {
+            //Debug.Log("Finish");
+            gameManager.GameClear();
+        }
+        if (collision.gameObject.tag == "Item")
+        {
+            collision.gameObject.GetComponent<ItemManager>().GetItem();
+        }
+        if (collision.gameObject.tag == "Enemy")
+        {
+            EnemyManager enemy = collision.gameObject.GetComponent<EnemyManager>();
+
+            if (this.transform.position.y > enemy.transform.position.y)
+            {
+                //敵を踏んだら
+                //プレイヤーをジャンプさせる
+                rigibody2D.velocity = new Vector2(rigibody2D.velocity.x, 0);
+                Jump();
+                enemy.DestroyEnemy();
+            }
+            else
+            {
+                //敵をぶつかったら
+                DestroyPLayer();
+                gameManager.GameOver();
+            }
+        }
+    }
+    void DestroyPLayer()
+    {
+        Destroy(this.gameObject);
+    }
+}
+
+
+    </code>
+    </pre>
+    </div>
+    </div>
+
+    <h3>自分のスキルについて</h3>
+	<div>
+	<a href="photo/xht_1.PNG"><img src="photo/xht_1.PNG" alt="Image" class="img-fluid"></br></a>
+	<a href="photo/lol_1.PNG"><img src="photo/lol_1.PNG" alt="Image" class="img-fluid"></br></a>
+    </div>
+
+	
+    
+</body>
+
+</html>
